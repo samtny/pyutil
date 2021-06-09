@@ -11,14 +11,16 @@ import credentials
 ### ONLY USE IT TO NOTIFY YOU WHEN IT'S TIME TO POST
 
 next_serial=496  # the next v0 serial that will be assigned (look at the sub and figure this out)
-wanted_serial=496 # the serial you want
-chat_id=0  # telegram chat id to send messages to
+wanted_serial=497 # the serial you want
+chat_id=credentials.telegramChatId  # telegram chat id to send messages to
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 logging.info('Starting bot')
 
 bot = telegram.Bot(credentials.telegramSecret)
+
+bot.send_message(chat_id=chat_id, text='Starting voronsnipebot monitoring')
 
 reddit = praw.Reddit(
     client_id=credentials.redditClientId, 
@@ -47,14 +49,26 @@ def is_v0(t):
 
 def update():
     global next_serial
+
+    new_serial = False
+
+    #bot.send_message(chat_id=chat_id, text='BEGIN update')
+
     for post in reddit.subreddit('voroncorexy').new(limit=20):
         if post.id in seen:
             continue
         seen.add(post.id)
         if 'serial request' in post.title.lower() and is_v0(post.title):
             next_serial += 1
-            if next_serial == wanted_serial:
-                explode()
+            new_serial = True
+
+    if next_serial >= wanted_serial:
+        explode()
+
+    if new_serial == True:
+        bot.send_message(chat_id=chat_id, text='Next serial: {}'.format(next_serial))
+
+    #bot.send_message(chat_id=chat_id, text='END update')
 
 if __name__ == '__main__':
     while True:
