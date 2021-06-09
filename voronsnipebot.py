@@ -1,21 +1,28 @@
 import time
 import praw
 import telegram
+import logging
+import sys
+import credentials
 
 ### Original code by voron Discord user So I says to the guy
 
 ### DO NOT USE THIS TO AUTOMATE POSTING YOUR REQUEST!!!!!!
 ### ONLY USE IT TO NOTIFY YOU WHEN IT'S TIME TO POST
 
-next_serial=453  # the next v0 serial that will be assigned (look at the sub and figure this out)
-wanted_serial=500 # the serial you want
+next_serial=496  # the next v0 serial that will be assigned (look at the sub and figure this out)
+wanted_serial=496 # the serial you want
 chat_id=0  # telegram chat id to send messages to
 
-bot = telegram.Bot('SECRETS')
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+
+logging.info('Starting bot')
+
+bot = telegram.Bot(credentials.telegramSecret)
 
 reddit = praw.Reddit(
-    client_id='SECRETS', 
-    client_secret='SECRETS', 
+    client_id=credentials.redditClientId, 
+    client_secret=credentials.redditSecret, 
     user_agent='voronsnipebot')
 
 seen = set()
@@ -27,6 +34,7 @@ def explode():
 
 def initialize_seen():
     for post in reddit.subreddit('voroncorexy').new(limit=20):
+        logging.info('Seen post {}'.format(post.id))
         if post.id in seen:
             continue
         seen.add(post.id)
